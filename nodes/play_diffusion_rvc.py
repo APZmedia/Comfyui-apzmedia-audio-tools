@@ -1,6 +1,6 @@
 import os
 
-from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict
+from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict, _ensure_playdiffusion_installed
 
 
 class PlayDiffusionRVC:
@@ -22,13 +22,8 @@ class PlayDiffusionRVC:
     CATEGORY = "APZmedia/Audio/PlayDiffusion"
 
     def voice_conversion(self, model, source_audio, target_voice):
-        try:
-            from playdiffusion import RVCInput
-        except ImportError as exc:
-            raise ImportError(
-                "PlayDiffusion package is not installed. "
-                "Use the PlayDiffusionLoader node first."
-            ) from exc
+        _ensure_playdiffusion_installed()
+        from playdiffusion import RVCInput
 
         src_path, _ = audio_to_tempfile(source_audio)
         tgt_path, _ = audio_to_tempfile(target_voice)

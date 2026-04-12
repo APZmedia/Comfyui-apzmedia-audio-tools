@@ -3,6 +3,8 @@ import os
 
 import torch
 
+from .play_diffusion_utils import _ensure_playdiffusion_installed
+
 # Module-level cache — avoids reloading the ~10 GB model between executions.
 _MODEL_CACHE: dict = {}
 
@@ -59,14 +61,8 @@ class PlayDiffusionLoader:
             device = "cpu"
 
         if device not in _MODEL_CACHE:
-            try:
-                from playdiffusion import PlayDiffusion
-            except ImportError as exc:
-                raise ImportError(
-                    "PlayDiffusion package is not installed.\n"
-                    "Install it with:\n"
-                    "  pip install git+https://github.com/playht/PlayDiffusion.git"
-                ) from exc
+            _ensure_playdiffusion_installed()
+            from playdiffusion import PlayDiffusion
 
             models_dir = _playdiffusion_models_dir()
             print(f"[APZmedia] PlayDiffusion model directory: {models_dir}")

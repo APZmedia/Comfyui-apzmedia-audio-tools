@@ -1,7 +1,7 @@
 import json
 import os
 
-from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict
+from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict, _ensure_playdiffusion_installed
 
 
 class PlayDiffusionInpaint:
@@ -63,13 +63,8 @@ class PlayDiffusionInpaint:
     def inpaint(self, model, audio, input_text, output_text, word_times_json,
                 num_steps=16, temperature=1.0, diversity=1.0, guidance=3.0,
                 audio_token_syllable_ratio=3.5):
-        try:
-            from playdiffusion import InpaintInput
-        except ImportError as exc:
-            raise ImportError(
-                "PlayDiffusion package is not installed. "
-                "Use the PlayDiffusionLoader node first."
-            ) from exc
+        _ensure_playdiffusion_installed()
+        from playdiffusion import InpaintInput
 
         word_times = json.loads(word_times_json) if word_times_json.strip() else []
 
