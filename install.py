@@ -46,25 +46,56 @@ def _ensure_model_dirs():
         print(f"[APZmedia] Model folder ready: {path}")
 
 
-def _check_pip_packages():
-    """Verify that required packages are importable; warn if not."""
-    missing = []
+def _install_pip_package(package, name=None):
+    """Install a pip package using the current Python interpreter."""
+    import subprocess  # noqa: PLC0415
 
+    pkg_name = name or package
+    print(f"[APZmedia] Installing {pkg_name}...")
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", package],
+            capture_output=True,
+            text=True,
+            timeout=600,  # 10 min timeout for large packages
+        )
+        if result.returncode == 0:
+            print(f"[APZmedia] {pkg_name} installed successfully.")
+            return True
+        else:
+            print(f"[APZmedia] Failed to install {pkg_name}:")
+            print(result.stderr[-500:] if len(result.stderr) > 500 else result.stderr)
+            return False
+    except subprocess.TimeoutExpired:
+        print(f"[APZmedia] Installation timed out ({pkg_name} is large).")
+        return False
+    except Exception as exc:
+        print(f"[APZmedia] Installation error: {exc}")
+        return False
+
+
+def _check_pip_packages():
+    """Verify that required packages are importable; install if not."""
+    # Check faster-whisper first (simpler install)
     try:
         import faster_whisper  # noqa: F401
     except ImportError:
-        missing.append("faster-whisper")
+        print("[APZmedia] faster-whisper not found, installing...")
+        _install_pip_package("faster-whisper", "faster-whisper")
 
+    # Check playdiffusion (complex git install)
     try:
         import playdiffusion  # noqa: F401
     except ImportError:
-        missing.append("git+https://github.com/playht/PlayDiffusion.git")
-
-    if missing:
-        print("[APZmedia] The following packages are not yet installed "
-              "and will be downloaded on first use:")
-        for pkg in missing:
-            print(f"  pip install {pkg}")
+        print("[APZmedia] PlayDiffusion not found, installing from GitHub...")
+        success = _install_pip_package(
+            "git+https://github.com/playht/PlayDiffusion.git",
+            "PlayDiffusion"
+        )
+        if not success:
+            print("[APZmedia] PlayDiffusion install failed. Install manually with:")
+            print(f"  {sys.executable} -m pip install git+https://github.com/playht/PlayDiffusion.git")
 
 
 if __name__ == "__main__":
