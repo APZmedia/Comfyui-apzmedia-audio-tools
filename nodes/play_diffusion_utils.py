@@ -1,63 +1,24 @@
-import importlib
 import os
-import subprocess
-import sys
 import tempfile
 
 import numpy as np
 import torch
 import torchaudio
 
-_PLAYDIFFUSION_REPO = "git+https://github.com/playht/PlayDiffusion.git"
-
 
 def _ensure_playdiffusion_installed():
-    """Check for PlayDiffusion package and attempt auto-install if missing."""
+    """Check for PlayDiffusion package and raise helpful error if missing."""
     try:
         import playdiffusion  # noqa: F401
         return
-    except ImportError:
-        pass
-
-    print("[APZmedia] PlayDiffusion package not found. Attempting auto-install...")
-    print(f"[APZmedia] Running: pip install {_PLAYDIFFUSION_REPO}")
-
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "install", _PLAYDIFFUSION_REPO],
-            capture_output=True,
-            text=True,
-            timeout=300,  # 5 minute timeout for large package
-        )
-        if result.returncode == 0:
-            print("[APZmedia] PlayDiffusion installed successfully.")
-            # Verify import works after install
-            importlib.invalidate_caches()
-            try:
-                import playdiffusion  # noqa: F401
-                return
-            except ImportError as exc:
-                raise RuntimeError(
-                    "Installation appeared to succeed but import still fails. "
-                    "Try restarting ComfyUI."
-                ) from exc
-        else:
-            raise RuntimeError(
-                f"pip install failed with exit code {result.returncode}.\n"
-                f"stdout: {result.stdout}\nstderr: {result.stderr}"
-            )
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError(
-            "Installation timed out after 5 minutes. "
-            "PlayDiffusion is a large package (~10 GB). "
-            "Try installing manually with:\n"
-            f"  pip install {_PLAYDIFFUSION_REPO}"
-        ) from exc
-    except Exception as exc:
-        raise RuntimeError(
-            f"Failed to install PlayDiffusion: {exc}\n"
-            f"Install manually with:\n"
-            f"  pip install {_PLAYDIFFUSION_REPO}"
+    except ImportError as exc:
+        raise ImportError(
+            "PlayDiffusion package is not installed.\n\n"
+            "To install, run this command in your ComfyUI environment:\n"
+            "  pip install git+https://github.com/playht/PlayDiffusion.git\n\n"
+            "For ComfyUI Portable, use the embedded Python:\n"
+            "  C:/AI/ComfyUI_windows_portable/python_embeded/python.exe "
+            "-m pip install git+https://github.com/playht/PlayDiffusion.git"
         ) from exc
 
 
