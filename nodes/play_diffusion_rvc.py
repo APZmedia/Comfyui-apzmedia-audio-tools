@@ -1,6 +1,13 @@
+"""
+PlayDiffusion RVC - HTTP Client Implementation
+
+Transfer speech from a source audio to match a target voice without changing the words.
+Communicates with the isolated PlayDiffusion server via HTTP.
+"""
+
 import os
 
-from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict, _ensure_playdiffusion_installed
+from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict
 
 
 class PlayDiffusionRVC:
@@ -10,7 +17,7 @@ class PlayDiffusionRVC:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": ("PLAY_DIFFUSION_MODEL",),
+                "client": ("PLAY_DIFFUSION_CLIENT",),
                 "source_audio": ("AUDIO",),
                 "target_voice": ("AUDIO",),
             }
@@ -21,18 +28,14 @@ class PlayDiffusionRVC:
     FUNCTION = "voice_conversion"
     CATEGORY = "APZmedia/Audio/PlayDiffusion"
 
-    def voice_conversion(self, model, source_audio, target_voice):
-        _ensure_playdiffusion_installed()
-        from playdiffusion import RVCInput
-
+    def voice_conversion(self, client, source_audio, target_voice):
         src_path, _ = audio_to_tempfile(source_audio)
         tgt_path, _ = audio_to_tempfile(target_voice)
         try:
-            inp = RVCInput(
-                source_speech=src_path,
-                target_voice=tgt_path,
+            sample_rate, pcm = client.rvc(
+                source_audio_path=src_path,
+                target_voice_path=tgt_path,
             )
-            sample_rate, pcm = model.rvc(inp)
         finally:
             os.unlink(src_path)
             os.unlink(tgt_path)

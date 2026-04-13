@@ -1,6 +1,13 @@
+"""
+PlayDiffusion TTS - HTTP Client Implementation
+
+Generate speech from text using a reference voice for speaker cloning.
+Communicates with the isolated PlayDiffusion server via HTTP.
+"""
+
 import os
 
-from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict, _ensure_playdiffusion_installed
+from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict
 
 
 class PlayDiffusionTTS:
@@ -10,7 +17,7 @@ class PlayDiffusionTTS:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": ("PLAY_DIFFUSION_MODEL",),
+                "client": ("PLAY_DIFFUSION_CLIENT",),
                 "reference_audio": ("AUDIO",),
                 "output_text": ("STRING", {
                     "multiline": True,
@@ -41,24 +48,21 @@ class PlayDiffusionTTS:
     FUNCTION = "tts"
     CATEGORY = "APZmedia/Audio/PlayDiffusion"
 
-    def tts(self, model, reference_audio, output_text,
+    def tts(self, client, reference_audio, output_text,
             num_steps=16, temperature=1.0, diversity=1.0, guidance=3.0,
             audio_token_syllable_ratio=3.5):
-        _ensure_playdiffusion_installed()
-        from playdiffusion import TTSInput
 
         tmp_path, _ = audio_to_tempfile(reference_audio)
         try:
-            inp = TTSInput(
-                voice=tmp_path,
+            sample_rate, pcm = client.tts(
+                reference_audio_path=tmp_path,
                 output_text=output_text,
                 num_steps=num_steps,
-                init_temp=temperature,
-                init_diversity=diversity,
+                temperature=temperature,
+                diversity=diversity,
                 guidance=guidance,
                 audio_token_syllable_ratio=audio_token_syllable_ratio,
             )
-            sample_rate, pcm = model.tts(inp)
         finally:
             os.unlink(tmp_path)
 

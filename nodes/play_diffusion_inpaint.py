@@ -1,7 +1,14 @@
+"""
+PlayDiffusion Inpaint - HTTP Client Implementation
+
+Replace words or phrases in existing speech audio using PlayDiffusion.
+Communicates with the isolated PlayDiffusion server via HTTP.
+"""
+
 import json
 import os
 
-from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict, _ensure_playdiffusion_installed
+from .play_diffusion_utils import audio_to_tempfile, pcm_to_audio_dict
 
 
 class PlayDiffusionInpaint:
@@ -15,7 +22,7 @@ class PlayDiffusionInpaint:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": ("PLAY_DIFFUSION_MODEL",),
+                "client": ("PLAY_DIFFUSION_CLIENT",),
                 "audio": ("AUDIO",),
                 "input_text": ("STRING", {
                     "multiline": True,
@@ -60,28 +67,25 @@ class PlayDiffusionInpaint:
     FUNCTION = "inpaint"
     CATEGORY = "APZmedia/Audio/PlayDiffusion"
 
-    def inpaint(self, model, audio, input_text, output_text, word_times_json,
+    def inpaint(self, client, audio, input_text, output_text, word_times_json,
                 num_steps=16, temperature=1.0, diversity=1.0, guidance=3.0,
                 audio_token_syllable_ratio=3.5):
-        _ensure_playdiffusion_installed()
-        from playdiffusion import InpaintInput
 
         word_times = json.loads(word_times_json) if word_times_json.strip() else []
 
         tmp_path, _ = audio_to_tempfile(audio)
         try:
-            inp = InpaintInput(
-                audio=tmp_path,
+            sample_rate, pcm = client.inpaint(
+                audio_path=tmp_path,
                 input_text=input_text,
                 output_text=output_text,
-                input_word_times=word_times,
+                word_times=word_times,
                 num_steps=num_steps,
-                init_temp=temperature,
-                init_diversity=diversity,
+                temperature=temperature,
+                diversity=diversity,
                 guidance=guidance,
                 audio_token_syllable_ratio=audio_token_syllable_ratio,
             )
-            sample_rate, pcm = model.inpaint(inp)
         finally:
             os.unlink(tmp_path)
 
