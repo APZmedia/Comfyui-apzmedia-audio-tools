@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:arxiv.org)",
+      "WebFetch(domain:paperswithcode.com)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(find /c/CODE/Comfyui-apzmedia-audio-tools -name *.js -o -name *.vue -o -name web -type d)",
+      "WebSearch",
+      "WebFetch(domain:docs.comfy.org)",
+      "Bash(find /c/CODE -path *ComfyUI* -name *.js -exec grep -l \"canvas\\\\|draw\\\\|visual\\\\|chart\\\\|curve\" {})",
+      "Bash(2)",
+      "Bash(xargs -I{} dirname {})",
+      "Bash(find /c/CODE -path *ComfyUI* -name app.js)",
+      "Bash(locate ComfyUI/app.js)",
+      "WebFetch(domain:blog.play.ai)",
+      "Bash(/usr/bin/ls -la C:/CODE/Comfyui-apzmedia-audio-tools/nodes/)",
+      "Bash(cp:*)",
+      "Bash(.git add:*)",
+      "Bash(.git --version)",
+      "Bash(.which git:*)",
+      "Skill(gsd-new-project)"
+    ]
+  }
+}

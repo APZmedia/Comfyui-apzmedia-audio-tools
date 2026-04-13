@@ -11,6 +11,7 @@ except Exception:
     pass  # folder_paths not available in all ComfyUI builds — safe to ignore
 # ──────────────────────────────────────────────────────────────────────────
 
+from .nodes.audio_upload import AudioUpload
 from .nodes.speech_length_calculator import SpeechLengthCalculator
 from .nodes.audio_waveform_image import AudioWaveformImage
 from .nodes.audio_equalizer import AudioEqualizer
@@ -27,6 +28,7 @@ from .nodes.word_replacer import WordReplacer
 from .nodes.audio_region_selector import AudioRegionSelector
 
 NODE_CLASS_MAPPINGS = {
+    "APZ_AudioUpload": AudioUpload,
     "APZ_SpeechLengthCalculator": SpeechLengthCalculator,
     "APZ_AudioWaveformImage": AudioWaveformImage,
     "APZ_AudioEqualizer": AudioEqualizer,
@@ -42,6 +44,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "APZ_AudioUpload": "Audio Upload",
     "APZ_SpeechLengthCalculator": "Speech Length Calculator",
     "APZ_AudioWaveformImage": "Audio Waveform Image",
     "APZ_AudioEqualizer": "🎚️ Audio Equalizer",

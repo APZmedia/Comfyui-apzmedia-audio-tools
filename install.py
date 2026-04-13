@@ -9,6 +9,14 @@ alone cannot do: creating model directories and printing first-run guidance.
 
 import os
 import sys
+from pathlib import Path
+
+
+# Import Path at module level for use in functions
+Path = Path
+
+
+def _ensure_model_dirs():
 
 
 def _ensure_model_dirs():
@@ -75,27 +83,62 @@ def _install_pip_package(package, name=None):
         return False
 
 
+def _setup_playdiffusion_server():
+    """Set up the isolated PlayDiffusion server venv."""
+    import subprocess  # noqa: PLC0415
+
+    server_dir = Path(__file__).parent / "playdiffusion_server"
+    setup_script = server_dir / "setup_venv.py"
+
+    if not setup_script.exists():
+        print("[APZmedia] PlayDiffusion server setup script not found.")
+        return False
+
+    print("[APZmedia] Setting up PlayDiffusion isolated server...")
+    print("[APZmedia] This will create a separate Python environment (~10 GB download)...")
+
+    try:
+        result = subprocess.run(
+            [sys.executable, str(setup_script)],
+            capture_output=True,
+            text=True,
+            timeout=1200,  # 20 min for large downloads
+        )
+        if result.returncode == 0:
+            print("[APZmedia] PlayDiffusion server setup complete!")
+            return True
+        else:
+            print("[APZmedia] Server setup failed:")
+            print(result.stderr[-1000:] if len(result.stderr) > 1000 else result.stderr)
+            return False
+    except subprocess.TimeoutExpired:
+        print("[APZmedia] Server setup timed out (too slow connection or large download).")
+        return False
+    except Exception as exc:
+        print(f"[APZmedia] Server setup error: {exc}")
+        return False
+
+
 def _check_pip_packages():
-    """Verify that required packages are importable; install if not."""
-    # Check faster-whisper first (simpler install)
+    """Set up PlayDiffusion server if needed."""
+    import subprocess  # noqa: PLC0415
+
+    # Check for faster-whisper in main env (used for transcription)
     try:
         import faster_whisper  # noqa: F401
     except ImportError:
         print("[APZmedia] faster-whisper not found, installing...")
-        _install_pip_package("faster-whisper", "faster-whisper")
+        _install_pip_package("faster-whisper>=1.0.0", "faster-whisper")
 
-    # Check playdiffusion (complex git install)
-    try:
-        import playdiffusion  # noqa: F401
-    except ImportError:
-        print("[APZmedia] PlayDiffusion not found, installing from GitHub...")
-        success = _install_pip_package(
-            "git+https://github.com/playht/PlayDiffusion.git",
-            "PlayDiffusion"
-        )
-        if not success:
-            print("[APZmedia] PlayDiffusion install failed. Install manually with:")
-            print(f"  {sys.executable} -m pip install git+https://github.com/playht/PlayDiffusion.git")
+    # Check if PlayDiffusion server is set up
+    server_dir = Path(__file__).parent / "playdiffusion_server"
+    venv_python = server_dir / "venv" / "Scripts" / "python.exe"
+
+    if venv_python.exists():
+        print("[APZmedia] PlayDiffusion server is already set up.")
+    else:
+        print("[APZmedia] PlayDiffusion server not found.")
+        _setup_playdiffusion_server()
 
 
 if __name__ == "__main__":

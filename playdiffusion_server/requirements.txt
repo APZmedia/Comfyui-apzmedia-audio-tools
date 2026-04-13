@@ -1,0 +1,13 @@
+# PlayDiffusion server dependencies
+# These are installed in an isolated venv, not in ComfyUI
+
+# Core PlayDiffusion (must be installed from git)
+git+https://github.com/playht/PlayDiffusion.git
+
+# Server framework
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+
+# For tensor serialization
+numpy>=1.24.0
